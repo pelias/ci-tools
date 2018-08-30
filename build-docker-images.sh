@@ -22,6 +22,8 @@ DOCKER_TAG_IMAGE_VERSION="${BRANCH}-${DATE}-${CIRCLE_SHA1}"
 DOCKER_TAG_IMAGE_NAME="${DOCKER_PROJECT}:${DOCKER_TAG_IMAGE_VERSION}"
 
 # build branch image and login to docker hub
+
+echo "docker build -t $DOCKER_BRANCH_IMAGE_NAME ."
 docker build -t $DOCKER_BRANCH_IMAGE_NAME .
 docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 
