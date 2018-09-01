@@ -21,8 +21,14 @@ DOCKER_BRANCH_IMAGE_NAME="${DOCKER_PROJECT}:${DOCKER_BRANCH_IMAGE_VERSION}"
 DOCKER_TAG_IMAGE_VERSION="${BRANCH}-${DATE}-${CIRCLE_SHA1}"
 DOCKER_TAG_IMAGE_NAME="${DOCKER_PROJECT}:${DOCKER_TAG_IMAGE_VERSION}"
 
+# configure NODE_ENV depending on branch
+NODE_ENV="development"
+if [[ "$BRANCH" == "production" ]]; then
+	NODE_ENV="production"
+fi
+
 # build branch image and login to docker hub
-docker build -t $DOCKER_BRANCH_IMAGE_NAME .
+docker build --build-arg NODE_ENV=$NODE_ENV -t $DOCKER_BRANCH_IMAGE_NAME .
 docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 
 # copy the image to the commit tag and push
