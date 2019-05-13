@@ -14,7 +14,8 @@ PROJECT_NAME=${PROJECT_NAME##docker-}
 DOCKER_PROJECT="$DOCKER_REPOSITORY/$PROJECT_NAME"
 
 # construct valid branch name
-BRANCH="$(echo $CIRCLE_BRANCH | tr '/' '-')" #slashes are not valid in docker tags. replace with dashes
+invalid_chars="/@" # list of characters not valid in a docker tag
+BRANCH="$(echo $CIRCLE_BRANCH | tr "$invalid_chars" '-')"
 
 # list of tags to build and push
 tags=(
