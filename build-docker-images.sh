@@ -29,7 +29,7 @@ if [[ "$BRANCH" == "master" ]]; then
 fi
 
 # build branch image and login to docker hub
-docker build -t ${tags[0]} .
+docker build --no-cache -t ${tags[0]} .
 docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 
 # copy the image to the commit tag and push
