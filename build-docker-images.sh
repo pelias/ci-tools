@@ -32,9 +32,11 @@ if [[ "$BRANCH" == "master" ]]; then
   tags+=("$DOCKER_PROJECT:latest")
 fi
 
-# build branch image and login to docker hub
-docker build -t ${tags[0]} .
+# log in to Docker Hub _before_ building to avoid rate limits
 docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+
+# build the docker image
+docker build -t ${tags[0]} .
 
 # copy the image to the commit tag and push
 for tag in ${tags[@]}; do
