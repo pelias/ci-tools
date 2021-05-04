@@ -35,15 +35,8 @@ fi
 # log in to Docker Hub _before_ building to avoid rate limits
 docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 
-# build the docker image
-docker build -t ${tags[0]} .
-
-# copy the image to the commit tag and push
+# Build and push each tag (the built image will be reused after the first build)
 for tag in ${tags[@]}; do
-  # all tags except the first one (which was used when building)
-  # must be associated with the result of docker build
-  if [[ "$tag" != "${tags[0]}" ]]; then
-    docker tag ${tags[0]} $tag
-  fi
+  docker build -t $tag .
   docker push $tag
 done
