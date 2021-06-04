@@ -32,8 +32,7 @@ if [[ "$BRANCH" == "master" ]]; then
   tags+=("$DOCKER_PROJECT:latest")
 fi
 
-# additionally, push the github version tag when the branch is master and the tag commit hash is
-# the same as master@HEAD
+# additionally, push the github version tags for the current revision when the branch is equals to master
 if [[ "$BRANCH" == "master" ]]; then
   GH_TAGS="$(git tag --points-at $REVISION)"
 
