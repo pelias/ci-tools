@@ -34,11 +34,9 @@ fi
 
 # additionally, push the github version tags for the current revision when the branch is equals to master
 if [[ "$BRANCH" == "master" ]]; then
-  GH_TAGS="$(git tag --points-at $REVISION)"
-
-  for tag in ${GH_TAGS[@]}; do
+  for tag in "$(git tag --points-at $REVISION)"; do
     tags+=("$DOCKER_PROJECT:$tag")
-  fi
+  done
 fi
 
 # log in to Docker Hub _before_ building to avoid rate limits
