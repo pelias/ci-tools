@@ -4,7 +4,6 @@ set -ux
 # calculate basic values
 DATE=`date +%Y-%m-%d`
 REVISION="$(git rev-parse HEAD)"
-GH_TAG="$(git describe --abbrev=0 --tags)"
 
 # calculate the full repository name (org and repo name) on Circle if defined
 CIRCLE_REPOSITORY="${CIRCLE_PROJECT_USERNAME:-}/${CIRCLE_PROJECT_REPONAME:-}"
@@ -35,11 +34,11 @@ fi
 
 # additionally, push the github version tag when the branch is master and the tag commit hash is
 # the same as master@HEAD
-if [[ "$BRANCH" == "master" && ! -z "$GH_TAG" ]]; then
-  GH_TAG_HASH="$(git rev-list -n 1 $GH_TAG)"
+if [[ "$BRANCH" == "master" ]]; then
+  GH_TAGS="$(git tag --points-at $REVISION)"
 
-  if [[ "$REVISION" == "$GH_TAG_HASH" ]]; then
-    tags+=("$DOCKER_PROJECT:$GH_TAG")
+  for tag in ${GH_TAGS[@]}; do
+    tags+=("$DOCKER_PROJECT:$tag")
   fi
 fi
 
