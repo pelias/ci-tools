@@ -35,7 +35,9 @@ fi
 # additionally, push the github version tags for the current revision when the branch is equals to master
 if [[ "$BRANCH" == "master" ]]; then
   for tag in "$(git tag --points-at $REVISION)"; do
-    tags+=("$DOCKER_PROJECT:$tag")
+    if [[ -n "$tag" ]]; then
+      tags+=("$DOCKER_PROJECT:$tag")
+    fi
   done
 fi
 
