@@ -32,6 +32,15 @@ if [[ "$BRANCH" == "master" ]]; then
   tags+=("$DOCKER_PROJECT:latest")
 fi
 
+# additionally, push the github version tags for the current revision when the branch is equals to master
+if [[ "$BRANCH" == "master" ]]; then
+  for tag in "$(git tag --points-at $REVISION)"; do
+    if [[ -n "$tag" ]]; then
+      tags+=("$DOCKER_PROJECT:$tag")
+    fi
+  done
+fi
+
 # log in to Docker Hub _before_ building to avoid rate limits
 docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 
