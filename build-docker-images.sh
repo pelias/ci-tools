@@ -1,6 +1,9 @@
 #!/bin/bash
 set -ux
 
+# fetch git tags
+git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+
 # calculate basic values
 DATE=`date +%Y-%m-%d`
 REVISION="$(git rev-parse HEAD)"
