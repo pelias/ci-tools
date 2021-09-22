@@ -1,6 +1,11 @@
 #!/bin/bash
 set -ux
 
+if [[ ! -f Dockerfile ]]; then
+	echo "No Dockerfile found, not building"
+	exit 0
+fi
+
 # fetch git tags
 git fetch --depth=1 origin +refs/tags/*:refs/tags/*
 
