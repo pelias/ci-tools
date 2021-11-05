@@ -54,6 +54,6 @@ docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 
 # Build and push each tag (the built image will be reused after the first build)
 for tag in ${tags[@]}; do
-  docker buildx --platform linux/amd64,linux/arm64,darwin/arm64 -t $tag .
+  docker buildx build --platform linux/amd64,linux/arm64,darwin/arm64 -t $tag .
   docker push $tag
 done
