@@ -27,7 +27,7 @@ DOCKER_PROJECT="${DOCKER_PROJECT/\/docker-/\/}"
 invalid_chars="/@" # list of characters not valid in a docker tag
 RAW_BRANCH="${GITHUB_REF:-$CIRCLE_BRANCH}" # get the branch from either Github or Circle
 # take the actual branch name and replace invalid characters with dashes
-BRANCH="$(echo $RAW_BRANCH | cut -d'/' -f 3 | tr "$invalid_chars" '-')"
+BRANCH="$(echo $RAW_BRANCH | cut -d'/' -f 3- | tr "$invalid_chars" '-')"
 
 # list of tags to build and push
 tags=(
