@@ -58,5 +58,10 @@ docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 
 # Build and push each tag (the built image will be reused after the first build)
 for tag in ${tags[@]}; do
-  docker buildx build --push --platform="$DOCKER_BUILD_PLATFORMS" -t $tag .
+  if [ $DOCKER_BUILD_PLATFORMS == "classic" ]; then
+    docker build -t $tag .
+    docker push $tag
+  else
+    docker buildx build --push --platform="$DOCKER_BUILD_PLATFORMS" -t $tag .
+  fi
 done
