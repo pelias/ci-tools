@@ -50,7 +50,7 @@ if [[ "$BRANCH" == "master" ]]; then
 fi
 
 # default build targets can be configured with the DOCKER_BUILD_PLATFORMS env var
-DOCKER_BUILD_DEFAULT_PLATFORMS='linux/amd64,linux/arm64,linux/arm/v7'
+DOCKER_BUILD_DEFAULT_PLATFORMS='linux/amd64,linux/arm64'
 DOCKER_BUILD_PLATFORMS=${DOCKER_BUILD_PLATFORMS:-$DOCKER_BUILD_DEFAULT_PLATFORMS}
 
 # log in to Docker Hub _before_ building to avoid rate limits
@@ -58,10 +58,12 @@ docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 
 # Build and push each tag (the built image will be reused after the first build)
 for tag in ${tags[@]}; do
-  if [ $DOCKER_BUILD_PLATFORMS == "classic" ]; then
+  if [ "$DOCKER_BUILD_PLATFORMS" == "classic" ]; then
     docker build -t $tag .
     docker push $tag
   else
+    docker buildx create --use --platform="$DOCKER_BUILD_PLATFORMS" --name 'multi-platform-builder'
+    docker buildx inspect --bootstrap
     docker buildx build --push --platform="$DOCKER_BUILD_PLATFORMS" -t $tag .
   fi
 done
