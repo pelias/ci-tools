@@ -57,15 +57,18 @@ DOCKER_BUILD_PLATFORMS=${DOCKER_BUILD_PLATFORMS:-$DOCKER_BUILD_DEFAULT_PLATFORMS
 docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 
 # Build and push each tag (the built image will be reused after the first build)
+
+# newer multi-arch builds using `docker buildx`
+docker buildx create --use --platform="$DOCKER_BUILD_PLATFORMS" --name 'multi-platform-builder'
+docker buildx inspect --bootstrap
 for tag in ${tags[@]}; do
-  # legacy single-arch builds using `docker build` are suffixed `-classic`
-  # note: these are generated for backwards compatibility with older versions of
-  # docker & will be deprecated/removed at a later date, please upgrade docker.
+  docker buildx build --push --platform="$DOCKER_BUILD_PLATFORMS" -t $tag .
+done
+
+# legacy single-arch builds using `docker build` are suffixed `-classic`
+# note: these are generated for backwards compatibility with older versions of
+# docker & will be deprecated/removed at a later date, please upgrade docker.
+for tag in ${tags[@]}; do
   docker build -t "$tag-classic" .
   docker push "$tag-classic"
-
-  # newer multi-arch builds using `docker buildx`
-  docker buildx create --use --platform="$DOCKER_BUILD_PLATFORMS" --name 'multi-platform-builder'
-  docker buildx inspect --bootstrap
-  docker buildx build --push --platform="$DOCKER_BUILD_PLATFORMS" -t $tag .
 done
