@@ -53,19 +53,39 @@ fi
 DOCKER_BUILD_DEFAULT_PLATFORMS='linux/amd64,linux/arm64'
 DOCKER_BUILD_PLATFORMS=${DOCKER_BUILD_PLATFORMS:-$DOCKER_BUILD_DEFAULT_PLATFORMS}
 
-# log in to Docker Hub _before_ building to avoid rate limits
-docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+# registry configuration
+# space-separated list of registries to push to (defaults to Docker Hub if not set)
+# for Docker Hub only: leave REGISTRIES unset or use "docker.io"
+# for AWS ECR: export REGISTRIES="123456789012.dkr.ecr.us-east-1.amazonaws.com"
+# for multiple: export REGISTRIES="docker.io 123456789012.dkr.ecr.us-east-1.amazonaws.com ghcr.io"
+REGISTRIES="${REGISTRIES:-docker.io}"
+
+# log in to all registries _before_ building to avoid rate limits
+for registry in $REGISTRIES; do
+  if [[ "$registry" =~ docker\.io ]]; then
+    # Docker Hub login (requires: DOCKER_USERNAME, DOCKER_PASSWORD)
+    docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+  elif [[ "$registry" =~ \.ecr\. ]]; then
+    # AWS ECR login (requires: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION or use IAM roles)
+    aws ecr get-login-password --region $(echo "$registry" | cut -d'.' -f4) | docker login --username AWS --password-stdin "$registry"
+  elif [[ "$registry" =~ ghcr\.io ]]; then
+    # GitHub Container Registry login (requires: GITHUB_USERNAME, GITHUB_TOKEN)
+    echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_USERNAME" --password-stdin
+  fi
+done
 
 # Build and push each tag (the built image will be reused after the first build)
 for tag in ${tags[@]}; do
   # legacy single-arch builds using `docker build` are suffixed `-classic`
   # note: these are generated for backwards compatibility with older versions of
   # docker & will be deprecated/removed at a later date, please upgrade docker.
-  docker build -t "$tag-classic" .
-  docker push "$tag-classic"
+  for registry in $REGISTRIES; do
+    docker build -t "$registry/$tag-classic" .
+    docker push "$registry/$tag-classic"
+  done
 
   # newer multi-arch builds using `docker buildx`
   docker buildx create --use --platform="$DOCKER_BUILD_PLATFORMS" --name 'multi-platform-builder'
   docker buildx inspect --bootstrap
-  docker buildx build --push --platform="$DOCKER_BUILD_PLATFORMS" -t $tag .
+  docker buildx build --push --platform="$DOCKER_BUILD_PLATFORMS" $(for registry in $REGISTRIES; do echo "-t $registry/$tag"; done) .
 done
